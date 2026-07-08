@@ -1,0 +1,17 @@
+{
+    // IntelliSense を使用して利用可能な属性を学べます。
+    // 既存の属性の説明をホバーして表示します。
+    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "com.example.App",
+            "projectName": "repo-cache-proxy",
+            "preLaunchTask": "build-jar",
+            "vmArgs": "-Dport=1324 -Dmatch=/ubuntu -Dupstream=http://ftp.udx.icscoe.jp/Linux/ubuntu -Ddatabase=cache --enable-native-access=ALL-UNNAMED -Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat='YYYY-MM-dd HH:mm:ss.SSS' -Dorg.slf4j.simpleLogger.defaultLogLevel=off -Dorg.slf4j.simpleLogger.log.com.example=trace"
+        }
+    ]
+}
