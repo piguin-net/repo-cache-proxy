@@ -13,7 +13,7 @@ import org.rocksdb.RocksDBException;
 
 public enum ChangeDetectionHeader {
     LAST_MODIFIED("Last-Modified", "If-Modified-Since"),
-    ETAG("ETag", "If-None-Match");
+    ETAG("ETag", "If-None-Path");
 
     private final String response;
     private final String request;
@@ -46,22 +46,19 @@ public enum ChangeDetectionHeader {
         return null;
     }
 
+    // TODO: content-length
     public static List<ColumnFamilyDescriptor> getDescriptors() {
         List<ColumnFamilyDescriptor> descriptors = new ArrayList<>();
         ColumnFamilyOptions option = new ColumnFamilyOptions();
         descriptors.add(new ColumnFamilyDescriptor(RocksDB.DEFAULT_COLUMN_FAMILY, option));
+        descriptors.add(new ColumnFamilyDescriptor("content-length".getBytes(), option));
         for (ChangeDetectionHeader header: ChangeDetectionHeader.values()) {
             descriptors.add(new ColumnFamilyDescriptor(header.response().getBytes(), option));
         }
         return descriptors;
     }
 
-    public ColumnFamilyHandle getHandle(List <ColumnFamilyHandle> handles) throws RocksDBException {
-        for (ColumnFamilyHandle handle: handles) {
-            if (Arrays.equals(handle.getName(), this.response().getBytes())) {
-                return handle;
-            }
-        }
-        return null;
+    public ColumnFamilyHandle getHandle(List<ColumnFamilyHandle> handles) throws RocksDBException {
+        return Util.getHandle(handles, this.response().getBytes());
     }
 }

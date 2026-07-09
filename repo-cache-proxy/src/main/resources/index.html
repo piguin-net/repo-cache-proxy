@@ -1,0 +1,109 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            dt {
+                margin-inline-start: 30px;
+            }
+            dd {
+                margin-inline-start: 60px;
+            }
+            details > summary {
+                cursor: zoom-in;
+            }
+            details:open > summary {
+                cursor: zoom-out;
+            }
+            details > summary  a {
+                cursor: pointer;
+            }
+            details > summary > form {
+                display: inline;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            var container = document.createElement('div');
+            document.body.append(container);
+
+            document.body.addEventListener('keydown', (event) => {
+                if (event.ctrlKey && event.key == 'a') {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    var items = Array.from(container.querySelectorAll('input[type="checkbox"]'));
+                    var check = items.length != items.filter(el => el.checked).length;
+                    items.forEach(el => el.checked = check);
+                    return;
+                }
+                if (event.keyCode == 46/*delete*/) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    var items = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
+                    Promise.all(items.map(el => fetch(el.value, {method: "DELETE"}))).catch((e) => {
+                        console.error(e);
+                        alert('error.');
+                    }).finally(() => {
+                        container.innerHTML = '';
+                        load(container);
+                    });
+                    return;
+                }
+            });
+
+            var load = (container) => {
+                fetch(
+                    'metadata'
+                ).then(
+                    res => res.json()
+                ).then(
+                    json => {
+                        Object.entries(json).forEach(([path, attr]) => {
+                            var checkbox = document.createElement('input');
+                            checkbox.type = 'checkbox';
+                            checkbox.value = path;
+                            var download = document.createElement('a');
+                            download.innerText = '⬇️';
+                            download.href = path;
+                            download.target = '_blank';
+                            var trush = document.createElement('a');
+                            trush.innerText = '🗑️';
+                            trush.onclick = 'this.parent.submit()';
+                            trush.addEventListener('click', (event) => {
+                                event.stopPropagation();
+                                fetch(path, {method: "DELETE"}).catch((e) => {
+                                    console.error(e);
+                                    alert('error.');
+                                }).finally(() => {
+                                    container.innerHTML = '';
+                                    load(container);
+                                });
+                            });
+                            var summary = document.createElement('summary');
+                            summary.append(checkbox);
+                            summary.append(download);
+                            summary.append(trush);
+                            summary.append(path);
+                            var details = document.createElement('details');
+                            details.append(summary);
+                            Object.entries(attr).forEach(([key, value]) => {
+                                var dt = document.createElement('dt');
+                                var dd = document.createElement('dd');
+                                dt.innerText = key;
+                                dd.innerText = value;
+                                details.append(dt);
+                                details.append(dd);
+                            });
+                            container.append(details);
+                        });
+                    }
+                ).catch((e) => {
+                    console.error(e);
+                    alert('error.');
+                });
+            };
+
+            load(container);
+        </script>
+    </body>
+</html>
