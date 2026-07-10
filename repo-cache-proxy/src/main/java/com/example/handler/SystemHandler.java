@@ -3,6 +3,7 @@ package com.example.handler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class SystemHandler {
 
     public HttpHandler metadata() {
         return (exchange) -> {
-            Map<String, Attribute> meta = this.database.get();
+            Map<String, Attribute> meta = new TreeMap<>(this.database.get());
             byte[] response = this.mapper.writeValueAsString(meta).getBytes();
             exchange.sendResponseHeaders(200, response.length);
             exchange.getResponseHeaders().add("content-type", "application/json");
