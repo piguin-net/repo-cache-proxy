@@ -43,6 +43,7 @@ public class CacheHandler implements HttpHandler {
     }
 
     // TODO: if-modified-since/if-none-match => If-Modified-Since/If-None-Match
+    // TODO: リクエストのループ検知
     @Override
     public void handle(HttpExchange downstream) throws IOException {
         try {
