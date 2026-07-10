@@ -22,26 +22,29 @@ import tools.jackson.databind.ObjectMapper;
 public class CacheManager {
     private static Logger logger = LoggerFactory.getLogger(CacheManager.class);
 
+    // TODO: content-encoding
     public static class Attribute {
         public String digest;
         public String etag;
         public String lastModified;
         public Long contentLength;
-        public Attribute(String digest, Map<String,List<String>> headers) {
-            this.digest = digest;
+        public static Attribute newInstance(String digest, Map<String,List<String>> headers) {
+            Attribute instance = new Attribute();
+            instance.digest = digest;
             for (Entry<String,List<String>> header: headers.entrySet()) {
                 switch (header.getKey().toLowerCase()) {
                     case "etag":
-                        this.etag = header.getValue().getLast();
+                        instance.etag = header.getValue().getLast();
                         break;
                     case "last-modified":
-                        this.lastModified = header.getValue().getLast();
+                        instance.lastModified = header.getValue().getLast();
                         break;
                     case "content-length":
-                        this.contentLength = Long.valueOf(header.getValue().getLast());
+                        instance.contentLength = Long.valueOf(header.getValue().getLast());
                         break;
                 }
             }
+            return instance;
         }
     }
 
@@ -63,7 +66,7 @@ public class CacheManager {
 
     public synchronized void put(String path, Map<String,List<String>> headers, InputStream data) throws FileNotFoundException, IOException {
         String digest = Util.hexdigest(path.getBytes());
-        Attribute attr = new Attribute(digest, headers);
+        Attribute attr = Attribute.newInstance(digest, headers);
         this.meta.put(path, attr);
         this.mapper.writeValue(this.database, this.meta);
         File file = this.getFile(attr);
