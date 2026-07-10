@@ -16,6 +16,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -24,9 +26,13 @@ public class CacheManager {
 
     // TODO: content-encoding
     public static class Attribute {
+        @JsonProperty("CacheFileName")
         public String digest;
+        @JsonProperty("ETag")
         public String etag;
+        @JsonProperty("Last-Modified")
         public String lastModified;
+        @JsonProperty("Content-Length")
         public Long contentLength;
         public static Attribute newInstance(String digest, Map<String,List<String>> headers) {
             Attribute instance = new Attribute();

@@ -58,7 +58,13 @@
                     res => res.json()
                 ).then(
                     json => {
-                        var totalSize = Object.values(json).map(x => x.contentLength).reduce((acc, x) => acc + x);
+                        if (Object.keys(json).length == 0) {
+                            alert('not cached.');
+                            return;
+                        }
+                        var totalSize = Object.values(json)
+                            .map(attr => attr['Content-Length'])
+                            .reduce((total, size) => total + size);
                         var label = document.createElement('label');
                         label.textContent = `total size: ${totalSize.toLocaleString()}Byte`;
                         container.append(label);
@@ -88,8 +94,8 @@
                             });
                             var progress = document.createElement('progress');
                             progress.max = totalSize;
-                            progress.value = attr.contentLength;
-                            progress.title = `${attr.contentLength.toLocaleString()}Byte`;
+                            progress.value = attr['Content-Length'];
+                            progress.title = `${attr['Content-Length']?.toLocaleString()}Byte`;
                             var summary = document.createElement('summary');
                             summary.append(checkbox);
                             summary.append(download);
