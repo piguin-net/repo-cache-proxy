@@ -64,13 +64,16 @@
                         container.append(label);
                         Object.entries(json).forEach(([path, attr]) => {
                             var checkbox = document.createElement('input');
+                            checkbox.title = 'select';
                             checkbox.type = 'checkbox';
                             checkbox.value = path;
                             var download = document.createElement('a');
+                            download.title = 'download';
                             download.innerText = '⬇️';
                             download.href = path;
                             download.target = '_blank';
                             var trush = document.createElement('a');
+                            trush.title = 'delete';
                             trush.innerText = '🗑️';
                             trush.onclick = 'this.parent.submit()';
                             trush.addEventListener('click', (event) => {
@@ -86,6 +89,7 @@
                             var progress = document.createElement('progress');
                             progress.max = totalSize;
                             progress.value = attr.contentLength;
+                            progress.title = `${attr.contentLength.toLocaleString()}Byte`;
                             var summary = document.createElement('summary');
                             summary.append(checkbox);
                             summary.append(download);
