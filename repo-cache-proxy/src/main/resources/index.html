@@ -59,6 +59,9 @@
                 ).then(
                     json => {
                         var totalSize = Object.values(json).map(x => x.contentLength).reduce((acc, x) => acc + x);
+                        var label = document.createElement('label');
+                        label.textContent = `total size: ${totalSize.toLocaleString()}Byte`;
+                        container.append(label);
                         Object.entries(json).forEach(([path, attr]) => {
                             var checkbox = document.createElement('input');
                             checkbox.type = 'checkbox';
