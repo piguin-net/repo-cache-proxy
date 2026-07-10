@@ -42,6 +42,7 @@ public class CacheHandler implements HttpHandler {
         this.http = http;
     }
 
+    // TODO: if-modified-since/if-none-match => If-Modified-Since/If-None-Match
     @Override
     public void handle(HttpExchange downstream) throws IOException {
         try {
