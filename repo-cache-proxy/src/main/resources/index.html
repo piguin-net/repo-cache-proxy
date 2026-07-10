@@ -2,6 +2,9 @@
     <head>
         <meta charset="UTF-8">
         <style>
+            body {
+                margin: 0;
+            }
             dt {
                 margin-inline-start: 30px;
             }
@@ -24,35 +27,48 @@
             details > summary > form {
                 display: inline;
             }
+            header {
+                position: sticky;
+                top: 0;
+                background-color: white;
+            }
+            header > a {
+                cursor: pointer;
+            }
         </style>
     </head>
     <body>
+        <header>
+            <input id="select-all" title="select" type="checkbox">
+            <a id="download-all" title="download">⬇️</a>
+            <a id="delete-all" title="delete">🗑️</a>
+            <label id="total-size"></label>
+            <hr>
+        </header>
+        <main></main>
+        <footer></footer>
         <script>
-            var container = document.createElement('div');
-            document.body.append(container);
+            var container = document.querySelector('main');
 
-            document.body.addEventListener('keydown', (event) => {
-                if (event.ctrlKey && event.key == 'a') {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    var items = Array.from(container.querySelectorAll('input[type="checkbox"]'));
-                    var check = items.length != items.filter(el => el.checked).length;
-                    items.forEach(el => el.checked = check);
-                    return;
-                }
-                if (event.keyCode == 46/*delete*/) {
-                    event.stopPropagation();
-                    event.preventDefault();
-                    var items = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
-                    Promise.all(items.map(el => fetch(el.value, {method: "DELETE"}))).catch((e) => {
-                        console.error(e);
-                        alert('error.');
-                    }).finally(() => {
-                        container.innerHTML = '';
-                        load(container);
-                    });
-                    return;
-                }
+            document.querySelector('#select-all').addEventListener('click', event => {
+                container.querySelectorAll('input[type="checkbox"]').forEach(el => {
+                    el.checked = event.target.checked;
+                });
+            });
+
+            document.querySelector('#download-all').addEventListener('click', event => {
+                alert('TODO: 実装');
+            });
+
+            document.querySelector('#delete-all').addEventListener('click', event => {
+                var items = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
+                Promise.all(items.map(el => fetch(el.value, {method: "DELETE"}))).catch((e) => {
+                    console.error(e);
+                    alert('error.');
+                }).finally(() => {
+                    container.innerHTML = '';
+                    load(container);
+                });
             });
 
             var load = (container) => {
@@ -69,14 +85,20 @@
                         var totalSize = Object.values(json)
                             .map(attr => attr['Content-Length'])
                             .reduce((total, size) => total + size);
-                        var label = document.createElement('label');
+                        var label = document.querySelector('#total-size');
                         label.textContent = `total size: ${totalSize.toLocaleString()}Byte`;
-                        container.append(label);
                         Object.entries(json).forEach(([path, attr]) => {
                             var checkbox = document.createElement('input');
                             checkbox.title = 'select';
                             checkbox.type = 'checkbox';
                             checkbox.value = path;
+                            checkbox.addEventListener('click', event => {
+                                document.querySelector('#select-all').checked = Array.from(
+                                    container.querySelectorAll('input[type="checkbox"]')
+                                ).every(
+                                    el => el.checked
+                                );
+                            });
                             var download = document.createElement('a');
                             download.title = 'download';
                             download.innerText = '⬇️';
@@ -115,6 +137,13 @@
                                 dd.innerText = value;
                                 details.append(dt);
                                 details.append(dd);
+                            });
+                            details.addEventListener('toggle', event => {
+                                document.querySelectorAll('details:open').forEach(el => {
+                                    if (event.target.open && el != event.target) {
+                                        el.open = false;
+                                    }
+                                });
                             });
                             container.append(details);
                         });
