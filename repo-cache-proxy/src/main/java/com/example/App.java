@@ -1,19 +1,14 @@
 package com.example;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.DBOptions;
-import org.rocksdb.RocksDB;
-import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +23,7 @@ public class App implements Closeable
 {
     private static Logger logger = LoggerFactory.getLogger(App.class);
 
-    public static void main( String[] args ) throws RocksDBException, IOException
+    public static void main( String[] args ) throws IOException
     {
         Setting setting = new Setting();
         logger.info("app start. {}", setting.toString());
@@ -45,24 +40,14 @@ public class App implements Closeable
     }
 
     private final Setting setting;
-    private final RocksDB database;  // TODO: delete=>jackson
+    private final CacheManager database;
     private final HttpClient http;
-    private final DBOptions options = new DBOptions();
-    private final List<ColumnFamilyHandle> columns = new ArrayList<>();
     private final SimpleHttpServer server;
 
-    public App(Setting setting) throws RocksDBException, IOException {
+    public App(Setting setting) throws IOException {
         this.setting = setting;
 
-        this.options.setCreateIfMissing(true);
-        this.options.setCreateMissingColumnFamilies(true);
-
-        this.database = RocksDB.open(
-            this.options,
-            setting.getDatabase().toString(),
-            ChangeDetectionHeader.getDescriptors(),
-            this.columns
-        );
+        this.database = new CacheManager(new File(setting.getDatabase().toString()));
 
         this.http = HttpClient.newBuilder()
             .version(Version.HTTP_1_1)
@@ -71,8 +56,8 @@ public class App implements Closeable
             .proxy(ProxySelector.getDefault())
             .build();
 
-        SystemHandler systemHandler = new SystemHandler(this.database, this.columns);
-        CacheHandler cacheHandler = new CacheHandler(this.setting, this.database, this.http, this.columns);
+        SystemHandler systemHandler = new SystemHandler(this.database);
+        CacheHandler cacheHandler = new CacheHandler(this.setting, this.database, this.http);
 
         this.server = new SimpleHttpServer(setting.getPort());
         this.server.createContext("/", systemHandler.index());
@@ -85,8 +70,7 @@ public class App implements Closeable
     }
 
     @Override
-    public void close() {
-        this.database.close();
-        this.options.close();
+    public void close() throws IOException {
+        this.server.close();
     }
 }

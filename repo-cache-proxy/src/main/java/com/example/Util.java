@@ -1,26 +1,28 @@
 package com.example;
 
-import java.util.Arrays;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.rocksdb.ColumnFamilyHandle;
-import org.rocksdb.RocksDBException;
-
 public class Util {
+    private static MessageDigest instance;
+    static {
+        try {
+            instance = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static String hexdigest(byte[] value) {
+        return HexFormat.of().formatHex(instance.digest(value));
+    }
     public static String getHeader(Map<String, List<String>> headers, String target) {
         for (Entry<String, List<String>> entry: headers.entrySet()) {
             if (entry.getKey().toLowerCase().equals(target.toLowerCase())) {
                 return entry.getValue().getFirst();
-            }
-        }
-        return null;
-    }
-    public static ColumnFamilyHandle getHandle(List<ColumnFamilyHandle> handles, byte[] name) throws RocksDBException {
-        for (ColumnFamilyHandle handle: handles) {
-            if (Arrays.equals(handle.getName(), name)) {
-                return handle;
             }
         }
         return null;
