@@ -58,6 +58,7 @@
                     res => res.json()
                 ).then(
                     json => {
+                        var totalSize = Object.values(json).map(x => x.contentLength).reduce((acc, x) => acc + x);
                         Object.entries(json).forEach(([path, attr]) => {
                             var checkbox = document.createElement('input');
                             checkbox.type = 'checkbox';
@@ -79,10 +80,14 @@
                                     load(container);
                                 });
                             });
+                            var progress = document.createElement('progress');
+                            progress.max = totalSize;
+                            progress.value = attr.contentLength;
                             var summary = document.createElement('summary');
                             summary.append(checkbox);
                             summary.append(download);
                             summary.append(trush);
+                            summary.append(progress);
                             summary.append(path);
                             var details = document.createElement('details');
                             details.append(summary);
