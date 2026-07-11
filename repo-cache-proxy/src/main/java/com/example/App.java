@@ -1,7 +1,6 @@
 package com.example;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
@@ -47,7 +46,7 @@ public class App implements Closeable
     public App(Setting setting) throws IOException {
         this.setting = setting;
 
-        this.database = new CacheManager(new File(setting.getDatabase().toString()));
+        this.database = new CacheManager(setting.getDatabase().toFile());
 
         this.http = HttpClient.newBuilder()
             .version(Version.HTTP_1_1)
@@ -56,12 +55,13 @@ public class App implements Closeable
             .proxy(ProxySelector.getDefault())
             .build();
 
-        SystemHandler systemHandler = new SystemHandler(this.database);
+        SystemHandler systemHandler = new SystemHandler(this.setting, this.database);
         CacheHandler cacheHandler = new CacheHandler(this.setting, this.database, this.http);
 
         this.server = new SimpleHttpServer(setting.getPort());
         this.server.createContext("/", systemHandler.index());
-        this.server.createContext("/metadata", systemHandler.metadata());
+        this.server.createContext("/api/meta", systemHandler.meta());
+        this.server.createContext("/api/bulk", systemHandler.bulk());
         this.server.createContext(setting.getPath(), cacheHandler);
     }
 

@@ -1,5 +1,7 @@
 package com.example;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
@@ -18,6 +20,10 @@ public class Util {
     }
     public static String hexdigest(byte[] value) {
         return HexFormat.of().formatHex(instance.digest(value));
+    }
+    public static File getCacheFilePath(File basedir, String digest) {
+        File sub = Path.of(basedir.getAbsolutePath(), digest.substring(0, 2)).toFile();
+        return Path.of(sub.getAbsolutePath(), digest).toFile();
     }
     public static String getHeader(Map<String, List<String>> headers, String target) {
         for (Entry<String, List<String>> entry: headers.entrySet()) {

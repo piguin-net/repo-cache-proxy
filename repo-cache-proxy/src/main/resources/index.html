@@ -24,9 +24,6 @@
             details > summary  a {
                 cursor: pointer;
             }
-            details > summary > form {
-                display: inline;
-            }
             header {
                 position: sticky;
                 top: 0;
@@ -57,23 +54,51 @@
             });
 
             document.querySelector('#download-all').addEventListener('click', event => {
-                alert('TODO: 実装');
+                var items = Array.from(container.querySelectorAll('input[type="checkbox"]:checked')).map(el => el.value);
+                if (items.length == 0) {
+                    alert('not selected.');
+                    return;
+                }
+                fetch('/api/bulk', {
+                    method: 'POST',
+                    body: JSON.stringify(items),
+                }).then(
+                    res => res.blob()
+                ).then(
+                    blob => window.URL.createObjectURL(blob)
+                ).then(
+                    url => {
+                        var a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'bulk.tar';
+                        a.click();
+                    }
+                ).catch((e) => {
+                    console.error(e);
+                    alert('error.');
+                });
             });
 
             document.querySelector('#delete-all').addEventListener('click', event => {
                 var items = Array.from(container.querySelectorAll('input[type="checkbox"]:checked'));
-                Promise.all(items.map(el => fetch(el.value, {method: "DELETE"}))).catch((e) => {
+                if (items.length == 0) {
+                    alert('not selected.');
+                    return;
+                }
+                fetch('/api/bulk', {
+                    method: 'DELETE',
+                    body: JSON.stringify(items.map(el => el.value)),
+                }).then(
+                    () => items.forEach(el => el.parentElement.parentElement.remove())
+                ).catch((e) => {
                     console.error(e);
                     alert('error.');
-                }).finally(() => {
-                    container.innerHTML = '';
-                    load(container);
                 });
             });
 
             var load = (container) => {
                 fetch(
-                    'metadata'
+                    '/api/meta'
                 ).then(
                     res => res.json()
                 ).then(
@@ -114,8 +139,7 @@
                                     console.error(e);
                                     alert('error.');
                                 }).finally(() => {
-                                    container.innerHTML = '';
-                                    load(container);
+                                    event.target.parentElement.parentElement.remove();
                                 });
                             });
                             var progress = document.createElement('progress');

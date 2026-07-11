@@ -75,7 +75,7 @@ public class CacheManager {
         Attribute attr = Attribute.newInstance(digest, headers);
         this.meta.put(path, attr);
         this.mapper.writeValue(this.database, this.meta);
-        File file = this.getFile(attr);
+        File file = Util.getCacheFilePath(this.dir, attr.digest);
         File sub = file.getParentFile();
         sub.mkdirs();
         try (OutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
@@ -97,7 +97,7 @@ public class CacheManager {
 
     public synchronized void delete(String path) {
         Attribute attr = this.meta.get(path);
-        File file = this.getFile(attr);
+        File file = Util.getCacheFilePath(this.dir, attr.digest);
         file.delete();
         File sub = file.getParentFile();
         if (sub.listFiles().length == 0) {
@@ -105,10 +105,5 @@ public class CacheManager {
         }
         this.meta.remove(path);
         this.mapper.writeValue(this.database, this.meta);
-    }
-
-    public File getFile(Attribute attr) {
-        File sub = Path.of(this.dir.getAbsolutePath(), attr.digest.substring(0, 2)).toFile();
-        return Path.of(sub.getAbsolutePath(), attr.digest).toFile();
     }
 }

@@ -176,7 +176,7 @@ public class CacheHandler implements HttpHandler {
         if (!change) {
             downstream.sendResponseHeaders(304, 0);
         } else {
-            File cache = this.database.getFile(attr);
+            File cache = Util.getCacheFilePath(this.setting.getDatabase().toFile(), attr.digest);
             downstream.sendResponseHeaders(200, attr.contentLength);
             try (
                 OutputStream output = downstream.getResponseBody();
